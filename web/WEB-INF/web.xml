@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-           version="2.5">
+         version="2.5">
 
     <servlet>
         <servlet-name>ClusterStateServlet</servlet-name>
@@ -24,6 +24,15 @@
         <servlet-class>com.wso2.raspberrypi.GetRebootStateServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>SelectPiServlet</servlet-name>
+        <servlet-class>com.wso2.raspberrypi.SelectPiServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GetSelectedPisServlet</servlet-name>
+        <servlet-class>com.wso2.raspberrypi.GetSelectedPisServlet</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
         <servlet-name>ClusterStateServlet</servlet-name>
         <url-pattern>/secure/state</url-pattern>
@@ -40,7 +49,15 @@
         <servlet-name>GetRebootStateServlet</servlet-name>
         <url-pattern>/secure/reboot</url-pattern>
     </servlet-mapping>
-
+    <servlet-mapping>
+        <servlet-name>SelectPiServlet</servlet-name>
+        <url-pattern>/secure/selectpi</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetSelectedPisServlet</servlet-name>
+        <url-pattern>/secure/selectedpis</url-pattern>
+    </servlet-mapping>
+    
     <security-constraint>
         <display-name>RPi Config App Security Constraint</display-name>
         <web-resource-collection>

@@ -1,9 +1,9 @@
+<%@ page import="com.wso2.raspberrypi.RaspberryPi" %>
 <%@ page import="com.wso2.raspberrypi.Util" %>
-<%@ page import="com.wso2.raspberrypi.RaspberryPi" %><%
+<%
     String mac = request.getParameter("mac");
-    String blink = request.getParameter("blink");
+    String label = request.getParameter("label");
     RaspberryPi raspberryPi = Util.getRaspberryPi(mac);
-    raspberryPi.setBlink(Boolean.valueOf(blink));
-
+    raspberryPi.setLabel(label);
     Util.updateRaspberryPi(raspberryPi);
 %>

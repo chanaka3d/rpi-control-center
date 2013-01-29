@@ -26,8 +26,10 @@ public class RaspberryPi {
     private String ipAddress;
     private Long lastUpdated;
     private String reservedFor;
+    private String label;
     private boolean blink;
     private boolean reboot;
+    private boolean selected;
 
     public RaspberryPi() {
     }
@@ -62,6 +64,14 @@ public class RaspberryPi {
         this.lastUpdated = lastUpdated;
     }
 
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
     public String getReservedFor() {
         return reservedFor;
     }
@@ -84,5 +94,13 @@ public class RaspberryPi {
 
     public void setReboot(boolean reboot) {
         this.reboot = reboot;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }

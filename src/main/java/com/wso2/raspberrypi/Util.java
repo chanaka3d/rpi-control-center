@@ -30,8 +30,12 @@ import java.util.List;
  * TODO: class description
  */
 public class Util {
-    public static List<RaspberryPi> getRaspberryPis() {
+    public static List<RaspberryPi> getRaspberryPis(String orderBy) {
         System.out.println("Listing registered Raspberry Pis...");
+
+        if(orderBy == null){
+            orderBy = "ip";
+        }
         List<RaspberryPi> results = new ArrayList<RaspberryPi>();
 
         BasicDataSource ds = getBasicDataSource();
@@ -41,17 +45,11 @@ public class Util {
         ResultSet rs = null;
         try {
             dbConnection = ds.getConnection();
-            prepStmt = dbConnection.prepareStatement("SELECT * FROM RASP_PI ORDER BY ip ASC");
+            prepStmt = dbConnection.prepareStatement("SELECT * FROM RASP_PI ORDER BY " + orderBy);
             rs = prepStmt.executeQuery();
 
             while (rs.next()) {
-                RaspberryPi pi = new RaspberryPi();
-                pi.setMacAddress(rs.getString("mac"));
-                pi.setIpAddress(rs.getString("ip"));
-                pi.setLastUpdated(rs.getLong("last_updated"));
-                pi.setReservedFor(rs.getString("owner"));
-                pi.setBlink(rs.getBoolean("blink"));
-                pi.setReboot(rs.getBoolean("reboot"));
+                RaspberryPi pi = toRaspberryPi(rs);
                 results.add(pi);
             }
         } catch (SQLException e) {
@@ -74,6 +72,19 @@ public class Util {
         return results;
     }
 
+    private static RaspberryPi toRaspberryPi(ResultSet rs) throws SQLException {
+        RaspberryPi pi = new RaspberryPi();
+        pi.setMacAddress(rs.getString("mac"));
+        pi.setIpAddress(rs.getString("ip"));
+        pi.setLastUpdated(rs.getLong("last_updated"));
+        pi.setLabel(rs.getString("label"));
+        pi.setReservedFor(rs.getString("owner"));
+        pi.setBlink(rs.getBoolean("blink"));
+        pi.setReboot(rs.getBoolean("reboot"));
+        pi.setSelected(rs.getBoolean("selected"));
+        return pi;
+    }
+
     public static RaspberryPi getRaspberryPi(String macAddress) {
         System.out.println("Listing Raspberry Pi with Mac Address: " + macAddress);
         RaspberryPi pi = null;
@@ -89,13 +100,7 @@ public class Util {
             rs = prepStmt.executeQuery();
 
             while (rs.next()) {
-                pi = new RaspberryPi();
-                pi.setMacAddress(rs.getString("mac"));
-                pi.setIpAddress(rs.getString("ip"));
-                pi.setLastUpdated(rs.getLong("last_updated"));
-                pi.setReservedFor(rs.getString("owner"));
-                pi.setBlink(rs.getBoolean("blink"));
-                pi.setReboot(rs.getBoolean("reboot"));
+                pi = toRaspberryPi(rs);
                 break;
             }
         } catch (SQLException e) {
@@ -161,7 +166,7 @@ public class Util {
     }
 
     public static void clearAllRaspberryPis() throws RaspberryPiException {
-        List<RaspberryPi> raspberryPis = getRaspberryPis();
+        List<RaspberryPi> raspberryPis = getRaspberryPis(null);
         for (RaspberryPi raspberryPi : raspberryPis) {
             if (raspberryPi.getReservedFor() != null && !raspberryPi.getReservedFor().isEmpty()) {
                 throw new RaspberryPiException("Cannot clear Raspberry Pis because some are reserved");
@@ -375,6 +380,8 @@ public class Util {
             prepStmt =
                     dbConnection.prepareStatement("UPDATE RASP_PI SET blink=" + raspberryPi.isBlink() +
                                                   ",reboot=" + raspberryPi.isReboot() +
+                                                  ",selected=" + raspberryPi.isSelected() +
+                                                  ",label='" + raspberryPi.getLabel() +"'" +
                                                   " where mac='" + raspberryPi.getMacAddress() + "'");
             prepStmt.execute();
         } catch (SQLException e) {
@@ -391,5 +398,68 @@ public class Util {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void deleteRaspberryPi(String mac) {
+        System.out.println("Removing Raspberry Pi: " + mac);
+        BasicDataSource ds = getBasicDataSource();
+        Connection dbConnection = null;
+        PreparedStatement prepStmt = null;
+        try {
+            dbConnection = ds.getConnection();
+            prepStmt =
+                    dbConnection.prepareStatement("DELETE FROM RASP_PI WHERE mac='" + mac + "'");
+            prepStmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (dbConnection != null) {
+                    dbConnection.close();
+                }
+                if (prepStmt != null) {
+                    prepStmt.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static List<RaspberryPi> getSelectedPis() {
+        List<RaspberryPi> results = new ArrayList<RaspberryPi>();
+
+        BasicDataSource ds = getBasicDataSource();
+
+        Connection dbConnection = null;
+        PreparedStatement prepStmt = null;
+        ResultSet rs = null;
+        try {
+            dbConnection = ds.getConnection();
+            prepStmt = dbConnection.prepareStatement("SELECT * FROM RASP_PI WHERE selected=true");
+            rs = prepStmt.executeQuery();
+
+            while (rs.next()) {
+                RaspberryPi pi = toRaspberryPi(rs);
+                results.add(pi);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (dbConnection != null) {
+                    dbConnection.close();
+                }
+                if (prepStmt != null) {
+                    prepStmt.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return results;
     }
 }

@@ -46,37 +46,51 @@
         }
 
     </style>
+    <script type="text/javascript" src="../js/jquery-1.7.2.min.js"></script>
     <script type="text/javascript">
 
-        function checkSelected(){
-            var xmlHttpReq = false;
-            var self = this;
-            // Mozilla/Safari
-            if (window.XMLHttpRequest) {
-                self.xmlHttpReq = new XMLHttpRequest();
-            }
-            // IE
-            else if (window.ActiveXObject) {
-                self.xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
-            }
-            self.xmlHttpReq.open('GET', "selectedpis", true);
-            self.xmlHttpReq.onreadystatechange = function () {
-                if (self.xmlHttpReq.readyState == 4) {
-//                    document.getElementById('message_area').innerHTML = msg;
-                } else {
-//                    document.getElementById('message_area').innerHTML = 'Operation failed';
-                }
-            }
-            self.xmlHttpReq.send(null);
+        var rowsHighlighted = false;
 
+        function checkSelected() {
+            $.ajax({
+                       type: "GET",
+                       url: "selectedpis",
+                       success: function (resp) {
+                           var data = resp.pis;
+                           if (data.length != 0 || rowsHighlighted) {
+                               var table = document.getElementById("pi-table");
+                               for (var j = 0, row; row = table.rows[j]; j++) {
+                                   if(row.className == "inactive") continue;
+                                   if (j % 2 == 0) {
+                                       row.className = "d0";
+                                   } else {
+                                       row.className = "d1";
+                                   }
+                                   rowsHighlighted = false;
+                               }
+                               for (var i = 0; i < data.length; i++) {
+                                   document.getElementById(data[i].mac + ".row").className = "sel";
+                                   rowsHighlighted = true;
+                               }
+                           }
+                       },
+                       error: function (json) {
+                           // To handle errors like bad connection, timeout, invalid url
+
+                       },
+                       complete: function (json) {
+                           //This function is invoked after success or error functions.
+                       }
+                   });
             setTimeout("checkSelected()", 10000);
         }
+
 
         setTimeout("checkSelected()", 10000);
 
         function deletePi(mac) {
-            if(confirm('Do you want to delete Raspberry Pi with Mac Address ' + mac + '?')){
-                 location.href = 'deletepi.jsp?mac=' + mac;
+            if (confirm('Do you want to delete Raspberry Pi with Mac Address ' + mac + '?')) {
+                location.href = 'deletepi.jsp?mac=' + mac;
             }
         }
 
@@ -160,9 +174,10 @@
 </p>
 
 <p>
-    <div id="message_area" style="background: yellow"></div>
+
+<div id="message_area" style="background: yellow"></div>
 </p>
-<table border="1" style="border-collapse: separate; border-spacing: 5px;">
+<table border="1" style="border-collapse: separate; border-spacing: 5px;" id="pi-table">
     <tr style="background: rgba(131,118,113,0.71); color: black;">
         <th>#</th>
         <th>
@@ -230,14 +245,13 @@
             String clazz = null;
             if (System.currentTimeMillis() - lastUpdated > 3 * 60 * 1000) {
                 clazz = "inactive";
-            }
-            if(selected){
+            } else if (selected) {
                 clazz = "sel";
             } else {
                 clazz = (i % 2 == 0) ? "d0" : "d1";
             }
     %>
-    <tr class="<%= clazz%>">
+    <tr class="<%= clazz%>" id="<%= mac%>.row">
         <td><%= i%>
         </td>
         <td><%= ip %>
@@ -317,12 +331,15 @@
             %>
         </td>
         <td>
-            <a href="#" onclick="deletePi('<%= mac%>')"><img src="../images/delete.png" alt="Delete" width="16px" height="16px"/></a>
+            <a href="#" onclick="deletePi('<%= mac%>')"><img src="../images/delete.png" alt="Delete"
+                                                             width="16px" height="16px"/></a>
             &nbsp;
             <%
-                if(selected){
+                if (selected) {
             %>
-            <a href="selectpi?mac=<%= mac%>&selected=false"><img src="../images/clear.png" alt="Deselect" width="16px" height="16px"/></a>
+            <a href="selectpi?mac=<%= mac%>&selected=false"><img src="../images/clear.png"
+                                                                 alt="Deselect" width="16px"
+                                                                 height="16px"/></a>
             <%
                 }
             %>

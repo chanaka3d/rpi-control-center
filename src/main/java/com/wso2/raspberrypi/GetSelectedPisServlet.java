@@ -28,15 +28,20 @@ import java.util.List;
 /**
  * TODO: class description
  */
-public class GetSelectedPisServlet extends HttpServlet{
+public class GetSelectedPisServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/plain");
+        resp.setContentType("application/json");
         List<RaspberryPi> pis = Util.getSelectedPis();
 
         StringBuilder result = new StringBuilder("{\"pis\": [");
+        int i = 0;
         for (RaspberryPi pi : pis) {
-             result.append("{\"mac\": \"").append(pi.getMacAddress()).append("\"},");
+            result.append("{\"mac\": \"").append(pi.getMacAddress()).append("\"}");
+            i++;
+            if(i != pis.size()) {
+               result.append(",");
+            }
         }
         result.append("]}");
         PrintWriter writer = resp.getWriter();
